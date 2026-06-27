@@ -1,4 +1,4 @@
-import { db } from '@/lib/kv';
+import { db } from '@/lib/redis';
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
 
