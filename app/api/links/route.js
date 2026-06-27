@@ -1,4 +1,4 @@
-import { db } from '@/lib/kv';
+import { db } from '@/lib/redis';
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
 
@@ -9,7 +9,13 @@ export async function GET(req) {
   const links = [];
   for (const id of linkIds) {
     const link = await db.hgetall(`link:${id}`);
-    links.push({ id, ...link, results: link.results ? JSON.parse(link.results) : [] });
+    if (link) {
+      links.push({
+        id,
+        ...link,
+        results: link.results ? JSON.parse(link.results) : [],
+      });
+    }
   }
   return NextResponse.json(links);
 }
