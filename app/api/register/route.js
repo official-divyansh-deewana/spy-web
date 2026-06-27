@@ -1,4 +1,4 @@
-import { db } from '@/lib/kv';
+import { db } from '@/lib/redis';
 import bcrypt from 'bcryptjs';
 import { NextResponse } from 'next/server';
 
