@@ -1,4 +1,4 @@
-import { db } from '@/lib/kv';
+import { db } from '@/lib/redis';
 import { NextResponse } from 'next/server';
 
 export async function POST(req) {
@@ -9,13 +9,15 @@ export async function POST(req) {
   const result = {
     ip: req.headers.get('x-forwarded-for') || req.ip,
     userAgent: req.headers.get('user-agent'),
-    photo: photo ? photo.substring(0, 100) + '...' : null, // we'll store full photo in production via base64? For simplicity, we can store the whole thing. But large. Better to store photo as a separate file? For demo, we store it directly in KV as base64 (limit 1MB). Here we'll store entire photo string.
+    photo: photo || null,  // base64 string length manage karna, KV me badi values allow hai, Upstash me bhi ok
     deviceInfo,
     timestamp: new Date().toISOString(),
   };
-  const fullPhoto = photo; // store full base64
-  result.photo = fullPhoto;
-  const updatedResults = [...(link.results || []), result];
-  await db.hset(`link:${id}`, { results: JSON.stringify(updatedResults) });
+  let results = [];
+  try {
+    results = JSON.parse(link.results || '[]');
+  } catch {}
+  results.push(result);
+  await db.hset(`link:${id}`, { results: JSON.stringify(results) });
   return NextResponse.json({ success: true, destUrl: link.destUrl });
 }
